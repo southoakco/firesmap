@@ -11,24 +11,50 @@ function getQueryVariable(variable) {
     console.log('Query variable %s not found', variable);
 }
 
-// Declare the map variable globally to access it throughout the script
+// Declare the map and layers variables globally
 var map;
+var baseLayers = {
+    'OpenStreetMap': L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    })
+};
+var overlays = {};
 
 document.addEventListener("DOMContentLoaded", function() {
     // Get initial map parameters from the URL
-    var mode = getQueryVariable("mode");
-    var latitude = parseFloat(getQueryVariable("latitude"));
-    var longitude = parseFloat(getQueryVariable("longitude"));
-    var version = getQueryVariable("version");
+    var latitude = parseFloat(getQueryVariable("latitude")) || 43.615;
+    var longitude = parseFloat(getQueryVariable("longitude")) || -116.2023;
 
-    // Initialize the map with parameters or default values
-    map = L.map('map').setView([latitude || 51.505, longitude || -0.09], 13);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors'
-    }).addTo(map);
+    // Initialize the map centered on Boise, Idaho or URL parameters
+    map = L.map('map', {
+        center: [latitude, longitude],
+        zoom: 13,
+        layers: [baseLayers['OpenStreetMap']]
+    });
 
-    // Log mode and version for debugging
-    console.log("Map loaded with mode:", mode, "and version:", version);
+    // Layer control setup
+    L.control.layers(baseLayers, overlays).addTo(map);
+
+    // Marker group for hotspots
+    var hotspotLayer = L.layerGroup().addTo(map);
+    overlays["Hotspots"] = hotspotLayer;
+
+    // Fetch and add hotspots to the map
+    fetch('hotspots_24hrs.json')
+        .then(response => response.json())
+        .then(data => {
+            data.forEach(hotspot => {
+                L.marker([hotspot.latitude, hotspot.longitude], {icon: L.icon({
+                    iconUrl: 'leaf-green.png',
+                    iconSize: [38, 95],
+                    iconAnchor: [22, 94],
+                    popupAnchor: [-3, -76]
+                })})
+                    .bindPopup(`Brightness: ${hotspot.brightness}`)
+                    .addTo(hotspotLayer);
+            });
+        })
+        .catch(error => console.error('Error loading hotspots:', error));
 
     // Listen for messages to update the map
     window.addEventListener("message", function(event) {
