@@ -43,9 +43,14 @@ document.addEventListener("DOMContentLoaded", function() {
     overlays["Hotspots"] = hotspotLayer;
     map.addLayer(hotspotLayer);
 
-    // Fetch and add hotspots to the map
-    fetch('hotspots_24hr.json')
-        .then(response => response.json())
+    // Fetch and add hotspots to the map from Google Drive
+    fetch('https://drive.google.com/uc?export=download&id=1_tflO4gAp4KYuAM-mt5GnYEnGjAGsMzo')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok: ' + response.statusText);
+            }
+            return response.json();
+        })
         .then(data => {
             data.forEach(hotspot => {
                 var marker = L.marker([hotspot.latitude, hotspot.longitude], {
@@ -55,24 +60,23 @@ document.addEventListener("DOMContentLoaded", function() {
                         iconAnchor: [22, 94],
                         popupAnchor: [-3, -76]
                     })
-                }).bindPopup(`Coordinates: ${hotspot.latitude.toFixed(3)}, ${hotspot.longitude.toFixed(3)}`);
-                hotspotLayer.addLayer(marker);
+                }).addTo(hotspotLayer);
             });
         })
         .catch(error => console.error('Error loading hotspots:', error));
 
     // Listen for messages to update the map
-window.addEventListener("message", function(event) {
-    // Ensure messages are coming from authorized domains
-    if (event.origin !== "https://southoakco.github.io" && event.origin !== "http://localhost") {
-        console.error("Received message from unauthorized domain:", event.origin);
-        return;
-    }
+    window.addEventListener("message", function(event) {
+        // Ensure messages are coming from authorized domains
+        if (event.origin !== "https://southoakco.github.io" && event.origin !== "http://localhost") {
+            console.error("Received message from unauthorized domain:", event.origin);
+            return;
+        }
 
-    // Update the map's center if latitude and longitude are provided
-    var data = event.data;
-    if (data && data.longitude && data.latitude) {
-        map.setView([data.latitude, data.longitude], map.getZoom());
-    }
-}, false);
+        // Update the map's center if latitude and longitude are provided
+        var data = event.data;
+        if (data && data.longitude && data.latitude) {
+            map.setView([data.latitude, data.longitude], map.getZoom());
+        }
+    }, false);
 });
