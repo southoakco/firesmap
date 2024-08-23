@@ -11,8 +11,14 @@ function getQueryVariable(variable) {
     console.log('Query variable %s not found', variable);
 }
 
-// Declare the map variable globally to access it throughout the script
+// Declare the map and layers variables globally
 var map;
+var baseLayers = {
+    'OpenStreetMap': L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    })
+};
+var overlays = {};
 
 document.addEventListener("DOMContentLoaded", function() {
     // Get initial map parameters from the URL
@@ -22,22 +28,30 @@ document.addEventListener("DOMContentLoaded", function() {
     var version = getQueryVariable("version");
 
     // Initialize the map with parameters or default values
-    map = L.map('map').setView([latitude || 51.505, longitude || -0.09], 13);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors'
-    }).addTo(map);
+    map = L.map('map', {
+        center: [latitude || 51.505, longitude || -0.09],
+        zoom: 13,
+        layers: [baseLayers['OpenStreetMap']]
+    });
 
     // Log mode and version for debugging
     console.log("Map loaded with mode:", mode, "and version:", version);
 
+    // Layer control setup
+    L.control.layers(baseLayers, overlays).addTo(map);
+
+    // Marker group for hotspots
+    var hotspotLayer = L.layerGroup().addTo(map);
+    overlays["Hotspots"] = hotspotLayer;
+
     // Fetch and add hotspots to the map
-    fetch('https://drive.google.com/uc?export=download&id=1_tflO4gAp4KYuAM-mt5GnYEnGjAGsMzo')
+    fetch('hotspots_24hrs.json')
         .then(response => response.json())
         .then(data => {
             data.forEach(hotspot => {
                 L.marker([hotspot.latitude, hotspot.longitude])
-                    .addTo(map)
-                    .bindPopup(`Brightness: ${hotspot.brightness}`);
+                    .bindPopup(`Brightness: ${hotspot.brightness}`)
+                    .addTo(hotspotLayer);
             });
         })
         .catch(error => console.error('Error loading hotspots:', error));
