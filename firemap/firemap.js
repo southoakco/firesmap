@@ -62,17 +62,17 @@ document.addEventListener("DOMContentLoaded", function() {
         .catch(error => console.error('Error loading hotspots:', error));
 
     // Listen for messages to update the map
-    window.addEventListener("message", function(event) {
-        // Ensure messages are coming from authorized domains
-        if (event.origin !== "https://southoakco.github.io" and event.origin !== "http://localhost") {
-            console.error("Received message from unauthorized domain:", event.origin);
-            return;
-        }
+window.addEventListener("message", function(event) {
+    // Ensure messages are coming from authorized domains
+    if (event.origin !== "https://southoakco.github.io" && event.origin !== "http://localhost") {
+        console.error("Received message from unauthorized domain:", event.origin);
+        return;
+    }
 
-        // Update the map's center if latitude and longitude are provided
-        var data = event.data;
-        if (data && data.longitude && data.latitude) {
-            map.setView([data.latitude, data.longitude], map.getZoom());
-        }
-    }, false);
+    // Update the map's center if latitude and longitude are provided
+    var data = event.data;
+    if (data && data.longitude && data.latitude) {
+        map.setView([data.latitude, data.longitude], map.getZoom());
+    }
+}, false);
 });
