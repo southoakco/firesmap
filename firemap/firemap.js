@@ -30,6 +30,21 @@ document.addEventListener("DOMContentLoaded", function() {
     // Log mode and version for debugging
     console.log("Map loaded with mode:", mode, "and version:", version);
 
+    // Function to add hotspots to the map
+    function addHotspotsToMap(hotspots) {
+        hotspots.forEach(function(hotspot) {
+            L.marker([hotspot.lat, hotspot.lng]).addTo(map)
+                .bindPopup(hotspot.description || "No description available");
+        });
+    }
+
+    // Fetch hotspots JSON from Google Drive
+    var hotspotsUrl = 'https://drive.google.com/uc?export=download&id=1_tflO4gAp4KYuAM-mt5GnYEnGjAGsMzo';
+    fetch(hotspotsUrl)
+        .then(response => response.json())
+        .then(addHotspotsToMap)
+        .catch(error => console.error('Error fetching hotspots:', error));
+
     // Listen for messages to update the map
     window.addEventListener("message", function(event) {
         // Ensure messages are coming from authorized domains
