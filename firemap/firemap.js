@@ -48,14 +48,15 @@ document.addEventListener("DOMContentLoaded", function() {
         .then(response => response.json())
         .then(data => {
             data.forEach(hotspot => {
-                L.marker([hotspot.latitude, hotspot.longitude], {
+                var marker = L.marker([hotspot.latitude, hotspot.longitude], {
                     icon: L.icon({
                         iconUrl: 'fire.png',
                         iconSize: [38, 95],
                         iconAnchor: [22, 94],
                         popupAnchor: [-3, -76]
                     })
-                }).addTo(hotspotLayer);
+                }).bindPopup(`Coordinates: ${hotspot.latitude.toFixed(3)}, ${hotspot.longitude.toFixed(3)}`);
+                hotspotLayer.addLayer(marker);
             });
         })
         .catch(error => console.error('Error loading hotspots:', error));
@@ -63,7 +64,7 @@ document.addEventListener("DOMContentLoaded", function() {
     // Listen for messages to update the map
     window.addEventListener("message", function(event) {
         // Ensure messages are coming from authorized domains
-        if (event.origin !== "https://southoakco.github.io" && event.origin !== "http://localhost") {
+        if (event.origin !== "https://southoakco.github.io" and event.origin !== "http://localhost") {
             console.error("Received message from unauthorized domain:", event.origin);
             return;
         }
