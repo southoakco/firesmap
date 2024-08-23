@@ -35,9 +35,13 @@ document.addEventListener("DOMContentLoaded", function() {
     // Layer control setup
     L.control.layers(baseLayers, overlays).addTo(map);
 
-    // Marker group for hotspots
-    var hotspotLayer = L.layerGroup().addTo(map);
+    // Marker cluster group setup
+    var hotspotLayer = L.markerClusterGroup({
+        chunkedLoading: true, // Enables lazy loading of markers
+        chunkInterval: 20 // Process markers in chunks, adjusting time in milliseconds
+    });
     overlays["Hotspots"] = hotspotLayer;
+    map.addLayer(hotspotLayer);
 
     // Fetch and add hotspots to the map
     fetch('hotspots_24hr.json')
@@ -46,13 +50,12 @@ document.addEventListener("DOMContentLoaded", function() {
             data.forEach(hotspot => {
                 L.marker([hotspot.latitude, hotspot.longitude], {
                     icon: L.icon({
-                        iconUrl: 'leaf-green.png',
+                        iconUrl: 'fire.png',
                         iconSize: [38, 95],
                         iconAnchor: [22, 94],
                         popupAnchor: [-3, -76]
                     })
-                }).bindPopup(`Brightness: ${hotspot.brightness}`)
-                  .addTo(hotspotLayer);
+                }).addTo(hotspotLayer);
             });
         })
         .catch(error => console.error('Error loading hotspots:', error));
