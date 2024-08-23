@@ -43,9 +43,16 @@ document.addEventListener("DOMContentLoaded", function() {
     overlays["Hotspots"] = hotspotLayer;
     map.addLayer(hotspotLayer);
 
-    // Fetch and add hotspots to the map
-    fetch('hotspots_24hr.json')
-        .then(response => response.json())
+    // Fetch the JSON data from Google Cloud Storage
+    var googleCloudUrl = 'https://storage.googleapis.com/hotspotbucket1/hotspots_24hr.json';
+
+    fetch(googleCloudUrl)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok: ' + response.statusText);
+            }
+            return response.json();
+        })
         .then(data => {
             data.forEach(hotspot => {
                 var marker = L.marker([hotspot.latitude, hotspot.longitude], {
@@ -62,17 +69,17 @@ document.addEventListener("DOMContentLoaded", function() {
         .catch(error => console.error('Error loading hotspots:', error));
 
     // Listen for messages to update the map
-window.addEventListener("message", function(event) {
-    // Ensure messages are coming from authorized domains
-    if (event.origin !== "https://southoakco.github.io" && event.origin !== "http://localhost") {
-        console.error("Received message from unauthorized domain:", event.origin);
-        return;
-    }
+    window.addEventListener("message", function(event) {
+        // Ensure messages are coming from authorized domains
+        if (event.origin !== "https://southoakco.github.io" && event.origin !== "http://localhost") {
+            console.error("Received message from unauthorized domain:", event.origin);
+            return;
+        }
 
-    // Update the map's center if latitude and longitude are provided
-    var data = event.data;
-    if (data && data.longitude && data.latitude) {
-        map.setView([data.latitude, data.longitude], map.getZoom());
-    }
-}, false);
+        // Update the map's center if latitude and longitude are provided
+        var data = event.data;
+        if (data && data.longitude && data.latitude) {
+            map.setView([data.latitude, data.longitude], map.getZoom());
+        }
+    }, false);
 });
