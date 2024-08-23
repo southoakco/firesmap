@@ -40,7 +40,7 @@ document.addEventListener("DOMContentLoaded", function() {
     overlays["Hotspots"] = hotspotLayer;
 
     // Fetch and add hotspots to the map
-    fetch('hotspots_24hrs.json')
+    fetch('hotspots_24hr.json')
         .then(response => response.json())
         .then(data => {
             data.forEach(hotspot => {
