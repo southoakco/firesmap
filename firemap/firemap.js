@@ -20,28 +20,17 @@ var baseLayers = {
 };
 var overlays = {};
 
-// Custom icon for the hotspots
-var hotspotIcon = L.icon({
-    iconUrl: 'leaf-green.png',
-    iconSize: [38, 95], // size of the icon
-    iconAnchor: [22, 94], // point of the icon which will correspond to marker's location
-    popupAnchor: [-3, -76] // point from which the popup should open relative to the iconAnchor
-});
-
 document.addEventListener("DOMContentLoaded", function() {
     // Get initial map parameters from the URL
-    var mode = getQueryVariable("mode");
-    var version = getQueryVariable("version");
+    var latitude = parseFloat(getQueryVariable("latitude")) || 43.615;
+    var longitude = parseFloat(getQueryVariable("longitude")) || -116.2023;
 
-    // Initialize the map centered on Boise, Idaho
+    // Initialize the map centered on Boise, Idaho or URL parameters
     map = L.map('map', {
-        center: [43.615, -116.2023], // Boise, Idaho coordinates
+        center: [latitude, longitude],
         zoom: 13,
         layers: [baseLayers['OpenStreetMap']]
     });
-
-    // Log mode and version for debugging
-    console.log("Map loaded with mode:", mode, "and version:", version);
 
     // Layer control setup
     L.control.layers(baseLayers, overlays).addTo(map);
@@ -55,7 +44,12 @@ document.addEventListener("DOMContentLoaded", function() {
         .then(response => response.json())
         .then(data => {
             data.forEach(hotspot => {
-                L.marker([hotspot.latitude, hotspot.longitude], {icon: hotspotIcon})
+                L.marker([hotspot.latitude, hotspot.longitude], {icon: L.icon({
+                    iconUrl: 'leaf-green.png',
+                    iconSize: [38, 95],
+                    iconAnchor: [22, 94],
+                    popupAnchor: [-3, -76]
+                })})
                     .bindPopup(`Brightness: ${hotspot.brightness}`)
                     .addTo(hotspotLayer);
             });
