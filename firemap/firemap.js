@@ -43,11 +43,8 @@ document.addEventListener("DOMContentLoaded", function() {
     overlays["Hotspots"] = hotspotLayer;
     map.addLayer(hotspotLayer);
 
-    // Fetch the JSON data from Google Drive (using a CORS proxy if needed)
-    var googleDriveUrl = 'https://drive.google.com/uc?export=download&id=1_tflO4gAp4KYuAM-mt5GnYEnGjAGsMzo';
-    var corsProxyUrl = 'https://cors-anywhere.herokuapp.com/'; // Use this proxy if you encounter CORS issues
-
-    fetch(corsProxyUrl + googleDriveUrl)
+    // Fetch and add hotspots to the map
+    fetch('hotspots_24hr.json')
         .then(response => response.json())
         .then(data => {
             data.forEach(hotspot => {
@@ -65,17 +62,17 @@ document.addEventListener("DOMContentLoaded", function() {
         .catch(error => console.error('Error loading hotspots:', error));
 
     // Listen for messages to update the map
-    window.addEventListener("message", function(event) {
-        // Ensure messages are coming from authorized domains
-        if (event.origin !== "https://southoakco.github.io" && event.origin !== "http://localhost") {
-            console.error("Received message from unauthorized domain:", event.origin);
-            return;
-        }
+window.addEventListener("message", function(event) {
+    // Ensure messages are coming from authorized domains
+    if (event.origin !== "https://southoakco.github.io" && event.origin !== "http://localhost") {
+        console.error("Received message from unauthorized domain:", event.origin);
+        return;
+    }
 
-        // Update the map's center if latitude and longitude are provided
-        var data = event.data;
-        if (data && data.longitude && data.latitude) {
-            map.setView([data.latitude, data.longitude], map.getZoom());
-        }
-    }, false);
+    // Update the map's center if latitude and longitude are provided
+    var data = event.data;
+    if (data && data.longitude && data.latitude) {
+        map.setView([data.latitude, data.longitude], map.getZoom());
+    }
+}, false);
 });
