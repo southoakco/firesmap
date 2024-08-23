@@ -35,15 +35,27 @@ document.addEventListener("DOMContentLoaded", function() {
     // Layer control setup
     L.control.layers(baseLayers, overlays).addTo(map);
 
-    // Create a single marker at latitude=1, longitude=1 with a custom icon
-    L.marker([1, 1], {
-        icon: L.icon({
-            iconUrl: 'leaf-green.png',
-            iconSize: [38, 95],
-            iconAnchor: [22, 94],
-            popupAnchor: [-3, -76]
+    // Marker group for hotspots
+    var hotspotLayer = L.layerGroup().addTo(map);
+    overlays["Hotspots"] = hotspotLayer;
+
+    // Fetch and add hotspots to the map
+    fetch('hotspots_24hrs.json')
+        .then(response => response.json())
+        .then(data => {
+            data.forEach(hotspot => {
+                L.marker([hotspot.latitude, hotspot.longitude], {
+                    icon: L.icon({
+                        iconUrl: 'leaf-green.png',
+                        iconSize: [38, 95],
+                        iconAnchor: [22, 94],
+                        popupAnchor: [-3, -76]
+                    })
+                }).bindPopup(`Brightness: ${hotspot.brightness}`)
+                  .addTo(hotspotLayer);
+            });
         })
-    }).bindPopup("Fixed position marker at Latitude=1, Longitude=1").addTo(map);
+        .catch(error => console.error('Error loading hotspots:', error));
 
     // Listen for messages to update the map
     window.addEventListener("message", function(event) {
